@@ -13,9 +13,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,6 +26,7 @@ import xyz.mchl.ferapid.junk.RetrofitInstance;
 import xyz.mchl.ferapid.junk.Utils;
 import xyz.mchl.ferapid.models.AuthRequest;
 import xyz.mchl.ferapid.models.AuthToken;
+import xyz.mchl.ferapid.models.DisburseRequest;
 import xyz.mchl.ferapid.models.ResolveAccountRequest;
 import xyz.mchl.ferapid.models.ResolveAccountResponse;
 
@@ -41,8 +44,11 @@ public class ProcessorActivity extends AppCompatActivity {
     TextView tvAccountNumber;
     TextView tvAmount;
     TextView tvBankName;
-
     Button proceedButton;
+
+    String accountNumber;
+    String bankCode;
+    String amountToSend;
 
     private Uri qrUri;
 
@@ -56,6 +62,7 @@ public class ProcessorActivity extends AppCompatActivity {
         tvAmount = findViewById(R.id.amount);
         tvBankName = findViewById(R.id.bank_name);
         proceedButton = (Button) findViewById(R.id.button_proceed);
+        
 
         barcode = getIntent().getStringExtra(EXTRA_URI_DATA);
         if (TextUtils.isEmpty(barcode)) {
@@ -68,15 +75,15 @@ public class ProcessorActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to process data", Toast.LENGTH_SHORT).show();
             finish();
         }
-        String bankCode = qrUri.getQueryParameter(getResources()
+        bankCode = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_bank_code));
-        String accountNumber = qrUri.getQueryParameter(getResources()
+        accountNumber = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_account_number));
-        String amount = qrUri.getQueryParameter(getResources()
+        amountToSend = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_amount));
 
 //        tvAccountNumber.setText(accountNumber);
-        //tvAmount.setText(amount);
+        //tvAmount.setText(amountToSend);
         activateListener();
         getAuthToken();
     }
@@ -155,6 +162,7 @@ public class ProcessorActivity extends AppCompatActivity {
                         int amount = (amountTV.getText().toString().isEmpty()) ? 0 :
                                 Integer.parseInt(amountTV.getText().toString());
                         String walletLock = walletLockTV.getText().toString();
+
                         processPayment(amount, walletLock);
                     }
                 })
@@ -168,7 +176,43 @@ public class ProcessorActivity extends AppCompatActivity {
     }
 
     private void processPayment(int amount, String walletLock) {
-        Log.d("WalletLock", walletLock);
+        DisburseRequest disburseRequest = new DisburseRequest();
+        disburseRequest.setWalletLock(walletLock);
+        disburseRequest.setAccountNumber(accountNumber);
+        disburseRequest.setAmountToSend(amount);
+        disburseRequest.setBankCode(bankCode);
+        disburseRequest.setSenderName("Test User");
+        disburseRequest.setCurrency("NGN");
+        disburseRequest.setReferenceCode(UUID.randomUUID()
+                .toString().replace("-", "_"));
+        MoneywaveService moneywaveService = RetrofitInstance.getInstance()
+                .create(MoneywaveService.class);
+        Call<JsonObject> call = moneywaveService.disburseToAccount(authToken, disburseRequest);
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+
+                if (response.body() == null) {
+                    try {
+                        Log.d("ProcessorActivity", response.errorBody().string());
+                    } catch (IOException ioe) {
+                        Log.d("processorActivity", ioe.getMessage());
+                    }
+                } else {
+                    JsonObject responseObject = (JsonObject) response.body();
+                    if (responseObject.get("status").equals("success")) {
+                        JsonObject stubData = responseObject.getAsJsonObject("data");
+                        JsonObject actualData = responseObject.getAsJsonObject("data");
+                    }
+                    Log.d("ProcessorData", responseObject.getAsJsonObject("data").toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
     }
 
     private void activateListener() {
