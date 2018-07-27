@@ -12,6 +12,11 @@
     <string name="generate">Generate</string>
     <string name="cancel">Cancel</string>
 
+    <!--processor activity and children dialogs -->
+    <string name="wallet_lock">Wallet Lock</string>
+    <string name="confirm_payment">Confirm</string>
+
+    <!--uri stuff-->
     <string name="ferapid_uri_scheme">ferapid</string>
     <string name="ferapid_uri_host">transfer</string>
     <string name="ferapid_uri_param_account_number">account</string>

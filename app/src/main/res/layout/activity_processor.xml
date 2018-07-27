@@ -85,7 +85,7 @@
         android:orientation="vertical" >
 
         <Button
-            android:id="@+id/button_send"
+            android:id="@+id/button_proceed"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

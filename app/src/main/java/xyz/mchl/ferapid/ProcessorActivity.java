@@ -1,10 +1,15 @@
 package xyz.mchl.ferapid;
 
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +42,8 @@ public class ProcessorActivity extends AppCompatActivity {
     TextView tvAmount;
     TextView tvBankName;
 
+    Button proceedButton;
+
     private Uri qrUri;
 
     @Override
@@ -48,21 +55,19 @@ public class ProcessorActivity extends AppCompatActivity {
         tvAccountNumber = findViewById(R.id.account_number);
         tvAmount = findViewById(R.id.amount);
         tvBankName = findViewById(R.id.bank_name);
+        proceedButton = (Button) findViewById(R.id.button_proceed);
 
         barcode = getIntent().getStringExtra(EXTRA_URI_DATA);
-
         if (TextUtils.isEmpty(barcode)) {
             Toast.makeText(this, "No data to process", Toast.LENGTH_SHORT).show();
             finish();
         }
-
         qrUri = Uri.parse(barcode);
         String scheme = getResources().getString(R.string.ferapid_uri_scheme);
         if (!qrUri.getScheme().equals(scheme)) {
             Toast.makeText(this, "Failed to process data", Toast.LENGTH_SHORT).show();
             finish();
         }
-
         String bankCode = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_bank_code));
         String accountNumber = qrUri.getQueryParameter(getResources()
@@ -72,7 +77,7 @@ public class ProcessorActivity extends AppCompatActivity {
 
 //        tvAccountNumber.setText(accountNumber);
         //tvAmount.setText(amount);
-
+        activateListener();
         getAuthToken();
     }
 
@@ -132,6 +137,45 @@ public class ProcessorActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<AuthToken> call, Throwable t) {
 
+            }
+        });
+    }
+
+    private void showConfirmDialog(View parentView) {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_confirm_payment, null);
+        dialogBuilder.setView(dialogView)
+                //add action buttons
+                .setPositiveButton(R.string.confirm_payment, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        TextView amountTV = dialogView.findViewById(R.id.amount_to_send);
+                        TextView walletLockTV = dialogView.findViewById(R.id.moneywave_lock);
+                        int amount = (amountTV.getText().toString().isEmpty()) ? 0 :
+                                Integer.parseInt(amountTV.getText().toString());
+                        String walletLock = walletLockTV.getText().toString();
+                        processPayment(amount, walletLock);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+    }
+
+    private void processPayment(int amount, String walletLock) {
+        Log.d("WalletLock", walletLock);
+    }
+
+    private void activateListener() {
+        proceedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showConfirmDialog(view);
             }
         });
     }
