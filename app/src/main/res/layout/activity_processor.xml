@@ -33,6 +33,7 @@
             android:layout_height="wrap_content"
             android:text="Account Name:"/>
         <TextView
+            android:id="@+id/account_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -50,6 +51,7 @@
             android:layout_height="wrap_content"
             android:text="Bank:"/>
         <TextView
+            android:id="@+id/bank_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -67,6 +69,7 @@
             android:layout_height="wrap_content"
             android:text="Amount:"/>
         <TextView
+            android:id="@+id/amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -82,7 +85,7 @@
         android:orientation="vertical" >
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/button_send"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

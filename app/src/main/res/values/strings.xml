@@ -14,4 +14,7 @@
 
     <string name="ferapid_uri_scheme">ferapid</string>
     <string name="ferapid_uri_host">transfer</string>
+    <string name="ferapid_uri_param_account_number">account</string>
+    <string name="ferapid_uri_param_bank_code">bank_code</string>
+    <string name="ferapid_uri_param_amount">amount</string>
 </resources>

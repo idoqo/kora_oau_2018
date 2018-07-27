@@ -73,7 +73,13 @@ public class ReceiveActivity extends AppCompatActivity {
     }
 
     private void generateQrCode(String bankCode, String accountNumber, int amount) {
-        String uri = "ferapid://transfer?bankCode="+bankCode+"&account="+accountNumber+"&amount="+amount;
+        String uri = "ferapid://transfer?"+
+                getResources().getString(R.string.ferapid_uri_param_bank_code)+
+                "="+bankCode+
+                "&"+getResources().getString(R.string.ferapid_uri_param_account_number)+
+                "="+accountNumber+
+                "&"+getResources().getString(R.string.ferapid_uri_param_amount)+
+                "="+amount;
         Bitmap qrBitmap = QRCode.from(uri).bitmap();
         ImageView qrView = findViewById(R.id.qrcodeView);
         qrView.setImageBitmap(qrBitmap);
