@@ -1,5 +1,6 @@
 package xyz.mchl.ferapid;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +26,9 @@ public class SendActivity extends AppCompatActivity
 
     public void onScanned(Barcode barcode) {
         Log.d("SendActivity", barcode.displayValue);
+        Intent processorIntent = new Intent(SendActivity.this, ProcessorActivity.class);
+        processorIntent.putExtra(ProcessorActivity.EXTRA_URI_DATA, barcode.displayValue);
+        startActivity(processorIntent);
     }
 
     public void onScannedMultiple(List<Barcode> barcodeList) {

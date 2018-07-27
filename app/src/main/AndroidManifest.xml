@@ -23,7 +23,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ReceiveActivity" />
-        <activity android:name=".SendActivity"></activity>
+        <activity android:name=".SendActivity" />
+        <activity android:name=".ProcessorActivity"></activity>
     </application>
 
 </manifest>
