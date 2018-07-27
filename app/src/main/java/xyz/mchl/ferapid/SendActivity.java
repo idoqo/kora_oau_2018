@@ -15,6 +15,8 @@ import info.androidhive.barcode.BarcodeReader;
 public class SendActivity extends AppCompatActivity
     implements BarcodeReader.BarcodeReaderListener{
 
+    public static String BASE_URL = "https://moneywave.herokuapp.com";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,7 +25,6 @@ public class SendActivity extends AppCompatActivity
 
     public void onScanned(Barcode barcode) {
         Log.d("SendActivity", barcode.displayValue);
-        Toast.makeText(this, barcode.displayValue, Toast.LENGTH_SHORT).show();
     }
 
     public void onScannedMultiple(List<Barcode> barcodeList) {
