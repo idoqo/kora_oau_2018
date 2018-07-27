@@ -14,8 +14,13 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- accept URIs beginning with "ecosia://transfer/" -->
+                <data
+                    android:host="@string/ferapid_uri_host"
+                    android:scheme="@string/ferapid_uri_scheme" />
             </intent-filter>
         </activity>
+        <activity android:name=".ReceiveActivity"></activity>
     </application>
 
 </manifest>

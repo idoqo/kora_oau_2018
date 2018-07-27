@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Ferapid</string>
+
+    <string name="send">Send</string>
+    <string name="receive">Receive</string>
+
+    <!-- generate code dialog -->
+    <string name="new_code">New Code</string>
+    <string name="account_number">Account Number</string>
+    <string name="bank_code">Bank Code</string>
+    <string name="amount">Amount</string>
+    <string name="generate">Generate</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="ferapid_uri_scheme">ferapid</string>
+    <string name="ferapid_uri_host">transfer</string>
 </resources>
