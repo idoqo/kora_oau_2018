@@ -30,5 +30,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(receiveIntent);
             }
         });
+
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent sendIntent = new Intent(MainActivity.this, SendActivity.class);
+                startActivity(sendIntent);
+            }
+        });
     }
 }

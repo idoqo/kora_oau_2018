@@ -20,10 +20,14 @@ public class ReceiveActivity extends AppCompatActivity {
 
     Button buttonNewCode;
 
+    public static String TAG;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive);
+
+        TAG = getClass().getName();
 
         buttonNewCode = (Button) findViewById(R.id.new_code);
 

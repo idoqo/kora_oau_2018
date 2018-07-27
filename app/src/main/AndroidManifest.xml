@@ -20,7 +20,8 @@
                     android:scheme="@string/ferapid_uri_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".ReceiveActivity"></activity>
+        <activity android:name=".ReceiveActivity" />
+        <activity android:name=".SendActivity"></activity>
     </application>
 
 </manifest>
