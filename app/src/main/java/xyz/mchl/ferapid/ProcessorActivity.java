@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.IOException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,12 +30,14 @@ public class ProcessorActivity extends AppCompatActivity {
     public static String EXTRA_URI_DATA = "barcode_uri";
     String barcode;
 
-    public String authToken;
+    private String authToken;
 
     TextView tvAccountName;
     TextView tvAccountNumber;
     TextView tvAmount;
     TextView tvBankName;
+
+    private Uri qrUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +56,7 @@ public class ProcessorActivity extends AppCompatActivity {
             finish();
         }
 
-        Uri qrUri = Uri.parse(barcode);
+        qrUri = Uri.parse(barcode);
         String scheme = getResources().getString(R.string.ferapid_uri_scheme);
         if (!qrUri.getScheme().equals(scheme)) {
             Toast.makeText(this, "Failed to process data", Toast.LENGTH_SHORT).show();
@@ -63,26 +67,42 @@ public class ProcessorActivity extends AppCompatActivity {
                 .getString(R.string.ferapid_uri_param_bank_code));
         String accountNumber = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_account_number));
-        resolveAccount(accountNumber, bankCode);
+        String amount = qrUri.getQueryParameter(getResources()
+                .getString(R.string.ferapid_uri_param_amount));
+
+//        tvAccountNumber.setText(accountNumber);
+        //tvAmount.setText(amount);
+
+        getAuthToken();
     }
 
-    private void resolveAccount(String accountNumber, String bankCode) {
-        if (authToken == null) {
-            getAuthToken();
-        }
+    private void resolveAccount(final String accountNumber, String bankCode) {
         MoneywaveService service = RetrofitInstance.getInstance()
                 .create(MoneywaveService.class);
         ResolveAccountRequest resolveReq = new ResolveAccountRequest(accountNumber, bankCode);
-        Call<ResolveAccountResponse> call = service.resolveAccount(resolveReq);
+        Log.d("ProcessorActivityToken", authToken);
+        Call<ResolveAccountResponse> call = service.resolveAccount(authToken, resolveReq);
         call.enqueue(new Callback<ResolveAccountResponse>() {
             @Override
             public void onResponse(Call<ResolveAccountResponse> call, Response<ResolveAccountResponse> response) {
-                if (response.body() != null && response.body().getStatus().equals("success")) {
-                    ResolveAccountResponse.Data data = response.body().getResponseData();
-                    Log.d("ProcessorActivity", data.getAccountName());
-                    tvAccountName.setText(data.getAccountName());
+                if (response.body() == null) {
+                    try {
+                        Log.d("ProcessorActivity", response.errorBody().string());
+                    } catch (IOException ioe) {
+                        Log.d("processorActivity", ioe.getMessage());
+                    }
                 } else {
-                    tvAccountName.setText("Failed to get data");
+                    if (response.body().getStatus().equals("success")) {
+                        ResolveAccountResponse.Data data = response.body().getResponseData();
+                        Log.d("ProcessorActivity", data.getAccountName());
+                        tvAccountName.setText(data.getAccountName());
+                        tvBankName.setText(Utils.fetchBankList().get("058"));
+                    } else {
+                        tvAccountName.setText("Failed to get data");
+                        Log.d("ProcessorActivity", response.body().getStatusMessage());
+                        Toast.makeText(ProcessorActivity.this, "status is error", Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
 
@@ -103,6 +123,11 @@ public class ProcessorActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<AuthToken> call, Response<AuthToken> response) {
                 authToken = response.body().getAuthToken();
+                String bankCode = qrUri.getQueryParameter(getResources()
+                        .getString(R.string.ferapid_uri_param_bank_code));
+                String accountNumber = qrUri.getQueryParameter(getResources()
+                        .getString(R.string.ferapid_uri_param_account_number));
+                resolveAccount(accountNumber, bankCode);
             }
             @Override
             public void onFailure(Call<AuthToken> call, Throwable t) {

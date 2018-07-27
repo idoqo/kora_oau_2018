@@ -7,6 +7,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.Body;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import xyz.mchl.ferapid.models.AuthRequest;
 import xyz.mchl.ferapid.models.AuthToken;
@@ -19,5 +20,6 @@ public interface MoneywaveService
     Call<AuthToken> fetchAuthToken(@Body AuthRequest authRequest);
 
     @POST("/v1/resolve/account")
-    Call<ResolveAccountResponse> resolveAccount(@Body ResolveAccountRequest request);
+    Call<ResolveAccountResponse> resolveAccount(
+            @Header("Authorization") String authToken, @Body ResolveAccountRequest request);
 }

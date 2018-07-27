@@ -3,13 +3,34 @@ package xyz.mchl.ferapid.models;
 import com.google.gson.annotations.SerializedName;
 
 public class ResolveAccountResponse {
-    @SerializedName("account_name")
+    @SerializedName("status")
     private String status;
     @SerializedName("data")
     private Data responseData;
 
+    @SerializedName("code")
+    private String statusCode;
+    @SerializedName("message")
+    private String statusMessage;
+
     public ResolveAccountResponse() {
 
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
     }
 
     public String getStatus() {
