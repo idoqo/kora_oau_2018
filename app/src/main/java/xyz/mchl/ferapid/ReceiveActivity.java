@@ -1,11 +1,18 @@
 package xyz.mchl.ferapid;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.media.Image;
+import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -16,9 +23,18 @@ import net.glxn.qrgen.android.QRCode;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import xyz.mchl.ferapid.junk.Utils;
+
 public class ReceiveActivity extends AppCompatActivity {
 
     Button buttonNewCode;
+
+    private QrCodeListViewModel qrCodeViewModel;
+    private QrCodeListAdapter recyclerAdapter;
+    private RecyclerView qrRecyclerView;
 
     public static String TAG;
 
@@ -26,10 +42,22 @@ public class ReceiveActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive);
-
         TAG = getClass().getName();
-
         buttonNewCode = (Button) findViewById(R.id.new_code);
+
+        qrRecyclerView = findViewById(R.id.qr_recycler_view);
+        recyclerAdapter = new QrCodeListAdapter(new ArrayList<xyz.mchl.ferapid.persistence.QRCode>());
+        qrRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        qrRecyclerView.setAdapter(recyclerAdapter);
+
+        qrCodeViewModel = ViewModelProviders.of(this).get(QrCodeListViewModel.class);
+        qrCodeViewModel.getQrCodeList().observe(ReceiveActivity.this, new Observer<List<xyz.mchl.ferapid.persistence.QRCode>>() {
+            @Override
+            public void onChanged(@Nullable List<xyz.mchl.ferapid.persistence.QRCode> qrCodes) {
+                recyclerAdapter.addItems(qrCodes);
+            }
+        });
 
         activateListeners();
     }
@@ -73,6 +101,9 @@ public class ReceiveActivity extends AppCompatActivity {
     }
 
     private void generateQrCode(String bankCode, String accountNumber, int amount) {
+        AddQrCodeViewModel addViewModel = ViewModelProviders
+                .of(this).get(AddQrCodeViewModel.class);
+
         String uri = "ferapid://transfer?"+
                 getResources().getString(R.string.ferapid_uri_param_bank_code)+
                 "="+bankCode+
@@ -84,5 +115,11 @@ public class ReceiveActivity extends AppCompatActivity {
         ImageView qrView = findViewById(R.id.qrcodeView);
         qrView.setImageBitmap(qrBitmap);
         qrView.setVisibility(View.VISIBLE);
+        addViewModel.addQrCode(new xyz.mchl.ferapid.persistence.QRCode(
+                amount,
+                accountNumber,
+                bankCode,
+                Utils.fetchBankList().get(bankCode)
+        ));
     }
 }
