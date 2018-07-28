@@ -47,7 +47,7 @@ public class ReceiveActivity extends AppCompatActivity {
         buttonNewCode = (Button) findViewById(R.id.new_code);
 
         qrRecyclerView = findViewById(R.id.qr_recycler_view);
-        recyclerAdapter = new QrCodeListAdapter(new ArrayList<xyz.mchl.ferapid.persistence.QRCode>());
+        recyclerAdapter = new QrCodeListAdapter(this, new ArrayList<xyz.mchl.ferapid.persistence.QRCode>());
         qrRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         qrRecyclerView.setAdapter(recyclerAdapter);
