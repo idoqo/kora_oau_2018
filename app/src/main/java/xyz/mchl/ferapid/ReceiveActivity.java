@@ -39,10 +39,6 @@ public class ReceiveActivity extends AppCompatActivity {
     Button buttonNewCode;
     Button shareButton;
 
-    private QrCodeListViewModel qrCodeViewModel;
-    private QrCodeListAdapter recyclerAdapter;
-    private RecyclerView qrRecyclerView;
-
     public static String TAG;
 
     @Override
@@ -51,20 +47,6 @@ public class ReceiveActivity extends AppCompatActivity {
         setContentView(R.layout.activity_receive);
         TAG = getClass().getName();
         buttonNewCode = findViewById(R.id.new_code);
-
-        qrRecyclerView = findViewById(R.id.qr_recycler_view);
-        recyclerAdapter = new QrCodeListAdapter(this, new ArrayList<xyz.mchl.ferapid.persistence.QRCode>());
-        qrRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        qrRecyclerView.setAdapter(recyclerAdapter);
-
-        qrCodeViewModel = ViewModelProviders.of(this).get(QrCodeListViewModel.class);
-        qrCodeViewModel.getQrCodeList().observe(ReceiveActivity.this, new Observer<List<xyz.mchl.ferapid.persistence.QRCode>>() {
-            @Override
-            public void onChanged(@Nullable List<xyz.mchl.ferapid.persistence.QRCode> qrCodes) {
-                recyclerAdapter.addItems(qrCodes);
-            }
-        });
 
         activateListeners();
     }
