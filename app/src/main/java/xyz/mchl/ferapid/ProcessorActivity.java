@@ -1,6 +1,8 @@
 package xyz.mchl.ferapid;
 
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -10,11 +12,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.w3c.dom.Text;
 
@@ -195,27 +199,52 @@ public class ProcessorActivity extends AppCompatActivity {
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                TextView txnStatus = transactionDialog.findViewById(R.id.transaction_status);
+                transactionDialog.findViewById(R.id.processingProgressBar)
+                        .setVisibility(View.GONE);
+                ImageView statusView = transactionDialog.findViewById(R.id.transaction_status_icon);
+                Bitmap icon = null;
+                String transactionMsgTitle = "";
+                String transactionMsgContent = "";
+
                 if (response.body() == null) {
+                    icon = BitmapFactory.decodeResource(ProcessorActivity.this.getResources(),
+                            R.drawable.ic_wrong_circle);
                     try {
-                        Log.d("ProcessorActivity", response.errorBody().string());
+                        JsonObject jsonObject = new JsonParser()
+                                .parse(response.errorBody().string())
+                                .getAsJsonObject();
+                        transactionMsgTitle = jsonObject.get("code").toString();
+                        transactionMsgContent = jsonObject.get("message").toString();
                     } catch (IOException ioe) {
-                        Log.d("processorActivity", ioe.getMessage());
+                        transactionMsgTitle = "Failed to complete request";
+                        transactionMsgContent = ioe.getMessage();
                     }
-                    Log.d("Transaction","Nah...response is null");
+
                 } else {
                     JsonObject responseObject = (JsonObject) response.body();
                     String status = responseObject.get("status").toString();
                     JsonObject stubData = responseObject.getAsJsonObject("data");
                     JsonObject actualData = responseObject.getAsJsonObject("data");
+
                     if (status.equals("\"success\"")) {
-                        Log.d("Transaction status", "Baby went through");
+                        icon = BitmapFactory.decodeResource(ProcessorActivity.this.getResources(),
+                                R.drawable.ic_check_circle);
+                        transactionMsgTitle = "Your transaction was successful.";
+                        transactionMsgContent = "Your transaction has been processed with reference: ABCDE";
                     } else {
-                        Log.d("Transaction status", "Transaction failed");
+
+                        icon = BitmapFactory.decodeResource(ProcessorActivity.this.getResources(),
+                                R.drawable.ic_wrong_circle);
+                        transactionMsgTitle = "Failed to process transaction.";
+                        transactionMsgContent = "Loh nahhh";
                     }
                 }
-                transactionDialog.findViewById(R.id.processingProgressBar)
-                        .setVisibility(View.INVISIBLE);
+                TextView msgTV = transactionDialog.findViewById(R.id.transaction_msg_title);
+                TextView contentTV = transactionDialog.findViewById(R.id.transaction_msg_content);
+                statusView.setImageBitmap(icon);
+                statusView.setVisibility(View.VISIBLE);
+                msgTV.setText(transactionMsgTitle);
+                contentTV.setText(transactionMsgContent);
             }
 
             @Override

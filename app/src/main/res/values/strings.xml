@@ -11,6 +11,7 @@
     <string name="amount">Amount</string>
     <string name="generate">Generate</string>
     <string name="cancel">Cancel</string>
+    <string name="transaction_status">Transaction Status</string>
 
     <!--processor activity and children dialogs -->
     <string name="wallet_lock">Wallet Lock</string>
