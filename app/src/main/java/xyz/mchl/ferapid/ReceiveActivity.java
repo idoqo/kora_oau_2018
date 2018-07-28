@@ -1,14 +1,18 @@
 package xyz.mchl.ferapid;
 
+import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
@@ -113,7 +117,7 @@ public class ReceiveActivity extends AppCompatActivity {
                 Utils.fetchBankList().get(bankCode)
         );
 
-        shareButton.setOnClickListener(handleShareButtonClick(qrImagePath));
+        shareButton.setOnClickListener(handleShareButtonClick(qrBitmap,qrImagePath));
         shareButton.setVisibility(View.VISIBLE);
 
         qrCode.setQrImagePath(qrImagePath);
@@ -121,18 +125,41 @@ public class ReceiveActivity extends AppCompatActivity {
         Log.d("QRPath", qrImagePath);
     }
 
-    private View.OnClickListener handleShareButtonClick(final String imageFileName) {
-        File appDir = Utils.getQrImagesFolder(this);
-        final File imageFile = new File(appDir, imageFileName);
+    private View.OnClickListener handleShareButtonClick(final Bitmap bitmap, final String imageFileName) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File imagePath = new File(getCacheDir(), "images");
-                File newFile = new File(imagePath, imageFileName);
-                Uri contentUri = FileProvider.getUriForFile(ReceiveActivity.this,
-                        "xyz.mchl.ferapid.file.provider", newFile);
-                Utils.shareImage(ReceiveActivity.this, contentUri);
+                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED) {
+                    String imageUrl = MediaStore.Images.Media.insertImage(getContentResolver(),
+                            bitmap, imageFileName, "description");
+                    Uri savedImageUri = Uri.parse(imageUrl);
+                    if (savedImageUri != null) {
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("image/png");
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, savedImageUri);
+                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(Intent.createChooser(shareIntent, "Send To..."));
+                    }
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            1);
+                }
             }
         };
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Permissions has been granted. Share your code with pride!",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Ferapid requires internet and storage access. Please check your" +
+                            " permission settings.",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 }
