@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 
 import java.io.File;
@@ -57,31 +58,25 @@ public class Utils
     }
 
     public static String saveBitmapToStorage(Context context, Bitmap bitmap) {
-        File dir = Utils.getQrImagesFolder(context);
         String filename = UUID.randomUUID().toString().replace("-", "_")+".png";
-        File myPath = new File(dir, filename);
-        FileOutputStream fos = null;
+
         try {
-            fos = new FileOutputStream(myPath);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            File cachePath = new File(context.getCacheDir(), "images");
+            cachePath.mkdirs(); // don't forget to make the directory
+            FileOutputStream stream = new FileOutputStream(cachePath + filename);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.close();
         }
         catch (Exception e) {
             Log.wtf("SavingFile", e.getMessage());
-        }
-        finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         //return filename to store in database
         return filename;
     }
 
     public static Bitmap loadImageFromStorage(Context context, String filename) {
-        File dir = Utils.getQrImagesFolder(context);
-        File imageFile = new File(dir, filename);
+        File cachePath = new File(context.getCacheDir(), "images");
+        File imageFile = new File(cachePath, filename);
         try {
             return BitmapFactory.decodeStream(new FileInputStream(imageFile));
         } catch (FileNotFoundException e) {
@@ -90,11 +85,37 @@ public class Utils
         }
     }
 
-    public static void shareImage(Context context, File imageFile) {
-        final Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageFile));
-        shareIntent.setType("image/png");
-        context.startActivity(Intent.createChooser(shareIntent, "Share QRCode Via"));
+    public static void shareImage(Context context, Uri contentUri) {
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
+        shareIntent.setDataAndType(contentUri,
+                context.getContentResolver().getType(contentUri));
+        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+        context.startActivity(Intent.createChooser(shareIntent, "Choose an app"));
+    }
+
+    public static Bitmap decodeUri(Context context, Uri uri,
+                                   final int requiredSize) throws FileNotFoundException {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(context.getContentResolver()
+                .openInputStream(uri), null, o);
+
+        int width_tmp = o.outWidth, height_tmp = o.outHeight;
+        int scale = 1;
+
+        while (true) {
+            if (width_tmp / 2 < requiredSize || height_tmp / 2 < requiredSize)
+                break;
+            width_tmp /= 2;
+            height_tmp /= 2;
+            scale *= 2;
+        }
+
+        BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inSampleSize = scale;
+        return BitmapFactory.decodeStream(context.getContentResolver()
+                .openInputStream(uri), null, o2);
     }
 }

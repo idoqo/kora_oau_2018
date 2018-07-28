@@ -1,17 +1,23 @@
 package xyz.mchl.ferapid;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
 
+import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.util.List;
 
 import info.androidhive.barcode.BarcodeReader;
+import okhttp3.internal.Util;
+import xyz.mchl.ferapid.junk.Utils;
 
 public class SendActivity extends AppCompatActivity
     implements BarcodeReader.BarcodeReaderListener{
@@ -22,6 +28,42 @@ public class SendActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send);
+
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action)) {
+            if (("image/*").equals(type)) {
+                processCodeFromImage(intent);
+            }
+        }
+    }
+
+    private void processCodeFromImage(Intent intent) {
+        Uri imageUri = (Uri)intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            try {
+                Bitmap bitmap = Utils.decodeUri(this, imageUri, 200);
+                //setup barcode detector
+                BarcodeDetector detector =
+                        new BarcodeDetector.Builder(getApplicationContext())
+                        .setBarcodeFormats(Barcode.DATA_MATRIX|Barcode.QR_CODE)
+                        .build();
+                if (!detector.isOperational()) {
+                    Toast.makeText(SendActivity.this, "Could not setup detector",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                Frame visionFrame = new Frame.Builder().setBitmap(bitmap).build();
+                SparseArray<Barcode> barcodes = detector.detect(visionFrame);
+                Barcode target = barcodes.valueAt(0);
+                this.onScanned(target);
+            } catch (Exception ioe) {
+
+            }
+        }
     }
 
     public void onScanned(Barcode barcode) {

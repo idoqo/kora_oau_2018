@@ -14,17 +14,34 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
                 <!-- accept URIs beginning with "ecosia://transfer/" -->
                 <data
                     android:host="@string/ferapid_uri_host"
                     android:scheme="@string/ferapid_uri_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".ReceiveActivity" />
+        <activity android:name=".ReceiveActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
         <activity android:name=".SendActivity" />
-        <activity android:name=".ProcessorActivity"></activity>
+        <activity android:name=".ProcessorActivity"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="xyz.mchl.ferapid.file.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_path" />
+        </provider>
     </application>
 
 </manifest>

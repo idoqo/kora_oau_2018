@@ -4,10 +4,13 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.Image;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -47,7 +50,7 @@ public class ReceiveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive);
         TAG = getClass().getName();
-        buttonNewCode = (Button) findViewById(R.id.new_code);
+        buttonNewCode = findViewById(R.id.new_code);
 
         qrRecyclerView = findViewById(R.id.qr_recycler_view);
         recyclerAdapter = new QrCodeListAdapter(this, new ArrayList<xyz.mchl.ferapid.persistence.QRCode>());
@@ -136,13 +139,17 @@ public class ReceiveActivity extends AppCompatActivity {
         Log.d("QRPath", qrImagePath);
     }
 
-    private View.OnClickListener handleShareButtonClick(String imageFileName) {
+    private View.OnClickListener handleShareButtonClick(final String imageFileName) {
         File appDir = Utils.getQrImagesFolder(this);
         final File imageFile = new File(appDir, imageFileName);
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utils.shareImage(ReceiveActivity.this, imageFile);
+                File imagePath = new File(getCacheDir(), "images");
+                File newFile = new File(imagePath, imageFileName);
+                Uri contentUri = FileProvider.getUriForFile(ReceiveActivity.this,
+                        "xyz.mchl.ferapid.file.provider", newFile);
+                Utils.shareImage(ReceiveActivity.this, contentUri);
             }
         };
     }
