@@ -19,6 +19,11 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/account_number" />
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/bank_code_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.AppCompatSpinner>
     <EditText
         android:id="@+id/bank_code"
         android:inputType="number"

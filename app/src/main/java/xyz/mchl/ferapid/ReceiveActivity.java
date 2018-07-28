@@ -19,11 +19,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.glxn.qrgen.android.QRCode;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ import xyz.mchl.ferapid.junk.Utils;
 public class ReceiveActivity extends AppCompatActivity {
 
     Button buttonNewCode;
+    Button shareButton;
 
     private QrCodeListViewModel qrCodeViewModel;
     private QrCodeListAdapter recyclerAdapter;
@@ -115,6 +118,7 @@ public class ReceiveActivity extends AppCompatActivity {
         Bitmap qrBitmap = QRCode.from(uri).bitmap();
         String qrImagePath = Utils.saveBitmapToStorage(this, qrBitmap);
         ImageView qrView = findViewById(R.id.qrcodeView);
+        shareButton = findViewById(R.id.button_share);
         qrView.setImageBitmap(qrBitmap);
         qrView.setVisibility(View.VISIBLE);
         xyz.mchl.ferapid.persistence.QRCode qrCode = new xyz.mchl.ferapid.persistence.QRCode(
@@ -123,8 +127,23 @@ public class ReceiveActivity extends AppCompatActivity {
                 bankCode,
                 Utils.fetchBankList().get(bankCode)
         );
+
+        shareButton.setOnClickListener(handleShareButtonClick(qrImagePath));
+        shareButton.setVisibility(View.VISIBLE);
+
         qrCode.setQrImagePath(qrImagePath);
         addViewModel.addQrCode(qrCode);
         Log.d("QRPath", qrImagePath);
+    }
+
+    private View.OnClickListener handleShareButtonClick(String imageFileName) {
+        File appDir = Utils.getQrImagesFolder(this);
+        final File imageFile = new File(appDir, imageFileName);
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Utils.shareImage(ReceiveActivity.this, imageFile);
+            }
+        };
     }
 }

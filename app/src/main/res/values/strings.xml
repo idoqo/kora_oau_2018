@@ -11,6 +11,7 @@
     <string name="bank_code">Bank Code</string>
     <string name="amount">Amount</string>
     <string name="generate">Generate</string>
+    <string name="share">Share</string>
     <string name="cancel">Cancel</string>
     <string name="transaction_status">Transaction Status</string>
 
@@ -24,4 +25,9 @@
     <string name="ferapid_uri_param_account_number">account</string>
     <string name="ferapid_uri_param_bank_code">bank_code</string>
     <string name="ferapid_uri_param_amount">amount</string>
+    
+    <!-- banks and bank codes-->
+    <string-array name="banks_array">
+
+    </string-array>
 </resources>

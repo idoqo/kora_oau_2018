@@ -2,8 +2,10 @@ package xyz.mchl.ferapid.junk;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
 
 import java.io.File;
@@ -86,5 +88,13 @@ public class Utils
             //todo return default drawable
             return null;
         }
+    }
+
+    public static void shareImage(Context context, File imageFile) {
+        final Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imageFile));
+        shareIntent.setType("image/png");
+        context.startActivity(Intent.createChooser(shareIntent, "Share QRCode Via"));
     }
 }
