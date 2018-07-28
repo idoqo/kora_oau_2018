@@ -40,7 +40,6 @@ import xyz.mchl.ferapid.junk.Utils;
 
 public class ReceiveActivity extends AppCompatActivity {
 
-    Button buttonNewCode;
     Button shareButton;
 
     public static String TAG;
@@ -50,21 +49,10 @@ public class ReceiveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive);
         TAG = getClass().getName();
-        buttonNewCode = findViewById(R.id.new_code);
-
-        activateListeners();
+        showGenerateDialog();
     }
 
-    private void activateListeners() {
-        buttonNewCode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showGenerateDialog(view);
-            }
-        });
-    }
-
-    private void showGenerateDialog(View parentView) {
+    private void showGenerateDialog() {
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.dialog_generate_code, null);
@@ -75,13 +63,10 @@ public class ReceiveActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     TextView accountNumberTV = (TextView) dialogView.findViewById(R.id.account_number);
                     TextView bankCodeTV = (TextView) dialogView.findViewById(R.id.bank_code);
-                    TextView amountTV = (TextView) dialogView.findViewById(R.id.amount);
-                    //todo do validation
-                    int amount = (amountTV.getText().toString().isEmpty()) ? 0 :
-                            Integer.parseInt(amountTV.getText().toString());
+
                     String accountNumber = accountNumberTV.getText().toString();
                     String bankCode = bankCodeTV.getText().toString();
-                    generateQrCode(bankCode, accountNumber, amount);
+                    generateQrCode(bankCode, accountNumber);
                 }
             })
             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -93,7 +78,7 @@ public class ReceiveActivity extends AppCompatActivity {
         .show();
     }
 
-    private void generateQrCode(String bankCode, String accountNumber, int amount) {
+    private void generateQrCode(String bankCode, String accountNumber) {
         AddQrCodeViewModel addViewModel = ViewModelProviders
                 .of(this).get(AddQrCodeViewModel.class);
 
@@ -101,9 +86,7 @@ public class ReceiveActivity extends AppCompatActivity {
                 getResources().getString(R.string.ferapid_uri_param_bank_code)+
                 "="+bankCode+
                 "&"+getResources().getString(R.string.ferapid_uri_param_account_number)+
-                "="+accountNumber+
-                "&"+getResources().getString(R.string.ferapid_uri_param_amount)+
-                "="+amount;
+                "="+accountNumber;
         Bitmap qrBitmap = QRCode.from(uri).bitmap();
         String qrImagePath = Utils.saveBitmapToStorage(this, qrBitmap);
         ImageView qrView = findViewById(R.id.qrcodeView);
@@ -111,7 +94,7 @@ public class ReceiveActivity extends AppCompatActivity {
         qrView.setImageBitmap(qrBitmap);
         qrView.setVisibility(View.VISIBLE);
         xyz.mchl.ferapid.persistence.QRCode qrCode = new xyz.mchl.ferapid.persistence.QRCode(
-                amount,
+                0,
                 accountNumber,
                 bankCode,
                 Utils.fetchBankList().get(bankCode)

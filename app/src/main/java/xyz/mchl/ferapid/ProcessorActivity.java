@@ -59,7 +59,6 @@ public class ProcessorActivity extends AppCompatActivity {
 
     String accountNumber;
     String bankCode;
-    String amountToSend;
 
     private Uri qrUri;
 
@@ -92,8 +91,6 @@ public class ProcessorActivity extends AppCompatActivity {
                 .getString(R.string.ferapid_uri_param_bank_code));
         accountNumber = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_account_number));
-        amountToSend = qrUri.getQueryParameter(getResources()
-                .getString(R.string.ferapid_uri_param_amount));
 
         activateListener();
         getAuthToken();
@@ -124,7 +121,6 @@ public class ProcessorActivity extends AppCompatActivity {
                         Log.d("ProcessorActivity", data.getAccountName());
                         tvAccountName.setText(data.getAccountName());
                         tvAccountNumber.setText(accountNumber);
-                        tvAmount.setText("₦"+amountToSend);
                         tvBankName.setText(Utils.fetchBankList().get(bankCode));
                         accountInfoLayout.setVisibility(View.VISIBLE);
                     } else {
@@ -237,13 +233,15 @@ public class ProcessorActivity extends AppCompatActivity {
                     JsonObject responseObject = (JsonObject) response.body();
                     String status = responseObject.get("status").toString();
                     JsonObject stubData = responseObject.getAsJsonObject("data");
-                    JsonObject actualData = responseObject.getAsJsonObject("data");
+                    JsonObject actualData = stubData.getAsJsonObject("data");
 
                     if (status.equals("\"success\"")) {
                         icon = BitmapFactory.decodeResource(ProcessorActivity.this.getResources(),
                                 R.drawable.ic_check_circle);
                         transactionMsgTitle = "Your transaction was successful.";
-                        transactionMsgContent = "Your transaction has been processed with reference: ABCDE";
+                        transactionMsgContent = "Your transaction has been processed with reference: " +
+                                actualData.get("uniquereference");
+                        Log.d("ActualData", actualData.toString());
                     } else {
 
                         icon = BitmapFactory.decodeResource(ProcessorActivity.this.getResources(),

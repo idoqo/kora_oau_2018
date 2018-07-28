@@ -19,7 +19,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <Button
+        <!--<Button
             android:id="@+id/new_code"
             android:layout_width="wrap_content"
             android:layout_height="45dp"
@@ -27,7 +27,7 @@
             android:layout_marginEnd="15dp"
             android:layout_gravity="right"
             android:text="@string/new_code"
-            android:textAllCaps="false" />
+            android:textAllCaps="false" />-->
     </LinearLayout>
 
     <LinearLayout
