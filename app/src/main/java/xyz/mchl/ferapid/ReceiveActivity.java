@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -112,14 +113,18 @@ public class ReceiveActivity extends AppCompatActivity {
                 "&"+getResources().getString(R.string.ferapid_uri_param_amount)+
                 "="+amount;
         Bitmap qrBitmap = QRCode.from(uri).bitmap();
+        String qrImagePath = Utils.saveBitmapToStorage(this, qrBitmap);
         ImageView qrView = findViewById(R.id.qrcodeView);
         qrView.setImageBitmap(qrBitmap);
         qrView.setVisibility(View.VISIBLE);
-        addViewModel.addQrCode(new xyz.mchl.ferapid.persistence.QRCode(
+        xyz.mchl.ferapid.persistence.QRCode qrCode = new xyz.mchl.ferapid.persistence.QRCode(
                 amount,
                 accountNumber,
                 bankCode,
                 Utils.fetchBankList().get(bankCode)
-        ));
+        );
+        qrCode.setQrImagePath(qrImagePath);
+        addViewModel.addQrCode(qrCode);
+        Log.d("QRPath", qrImagePath);
     }
 }

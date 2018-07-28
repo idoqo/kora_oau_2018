@@ -12,6 +12,7 @@ public class QRCode
     public String accountNumber;
     public String bankCode;
     public String bankName;
+    public String qrImagePath;
 
     public QRCode(int amount, String accountNumber, String bankCode, String bankName) {
         this.amount = amount;
@@ -50,5 +51,13 @@ public class QRCode
 
     public void setBankName(String bankName) {
         this.bankName = bankName;
+    }
+
+    public String getQrImagePath() {
+        return qrImagePath;
+    }
+
+    public void setQrImagePath(String qrImagePath) {
+        this.qrImagePath = qrImagePath;
     }
 }

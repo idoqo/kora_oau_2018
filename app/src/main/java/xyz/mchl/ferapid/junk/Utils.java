@@ -1,8 +1,18 @@
 package xyz.mchl.ferapid.junk;
 
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,5 +47,44 @@ public class Utils
         bankList.put("044", "ACCESS BANK PLC");
 
         return bankList;
+    }
+
+    public static File getQrImagesFolder(Context context) {
+        ContextWrapper cw = new ContextWrapper(context);
+        return cw.getDir("qr_imgs", Context.MODE_PRIVATE);
+    }
+
+    public static String saveBitmapToStorage(Context context, Bitmap bitmap) {
+        File dir = Utils.getQrImagesFolder(context);
+        String filename = UUID.randomUUID().toString().replace("-", "_")+".png";
+        File myPath = new File(dir, filename);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(myPath);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        }
+        catch (Exception e) {
+            Log.wtf("SavingFile", e.getMessage());
+        }
+        finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        //return filename to store in database
+        return filename;
+    }
+
+    public static Bitmap loadImageFromStorage(Context context, String filename) {
+        File dir = Utils.getQrImagesFolder(context);
+        File imageFile = new File(dir, filename);
+        try {
+            return BitmapFactory.decodeStream(new FileInputStream(imageFile));
+        } catch (FileNotFoundException e) {
+            //todo return default drawable
+            return null;
+        }
     }
 }
