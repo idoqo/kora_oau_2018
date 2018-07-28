@@ -61,7 +61,8 @@ public class SendActivity extends AppCompatActivity
                 Barcode target = barcodes.valueAt(0);
                 this.onScanned(target);
             } catch (Exception ioe) {
-
+                Toast.makeText(SendActivity.this, ioe.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
