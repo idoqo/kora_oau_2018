@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +48,9 @@ public class ProcessorActivity extends AppCompatActivity {
 
     private String authToken;
 
+    ProgressBar infoLoadingBar;
+    LinearLayout accountInfoLayout;
+
     TextView tvAccountName;
     TextView tvAccountNumber;
     TextView tvAmount;
@@ -67,7 +72,9 @@ public class ProcessorActivity extends AppCompatActivity {
         tvAccountNumber = findViewById(R.id.account_number);
         tvAmount = findViewById(R.id.amount);
         tvBankName = findViewById(R.id.bank_name);
-        proceedButton = (Button) findViewById(R.id.button_proceed);
+        proceedButton = findViewById(R.id.button_proceed);
+        infoLoadingBar =  findViewById(R.id.infoLoadingBar);
+        accountInfoLayout = findViewById(R.id.account_details_layout);
 
 
         barcode = getIntent().getStringExtra(EXTRA_URI_DATA);
@@ -88,13 +95,11 @@ public class ProcessorActivity extends AppCompatActivity {
         amountToSend = qrUri.getQueryParameter(getResources()
                 .getString(R.string.ferapid_uri_param_amount));
 
-//        tvAccountNumber.setText(accountNumber);
-        //tvAmount.setText(amountToSend);
         activateListener();
         getAuthToken();
     }
 
-    private void resolveAccount(final String accountNumber, String bankCode) {
+    private void resolveAccount(final String accountNumber, final String bankCode) {
         MoneywaveService service = RetrofitInstance.getInstance()
                 .create(MoneywaveService.class);
         ResolveAccountRequest resolveReq = new ResolveAccountRequest(accountNumber, bankCode);
@@ -103,23 +108,31 @@ public class ProcessorActivity extends AppCompatActivity {
         call.enqueue(new Callback<ResolveAccountResponse>() {
             @Override
             public void onResponse(Call<ResolveAccountResponse> call, Response<ResolveAccountResponse> response) {
+                infoLoadingBar.setVisibility(View.GONE);
                 if (response.body() == null) {
                     try {
                         Log.d("ProcessorActivity", response.errorBody().string());
                     } catch (IOException ioe) {
                         Log.d("processorActivity", ioe.getMessage());
                     }
+                    Toast.makeText(ProcessorActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT)
+                            .show();
+                    finish();
                 } else {
                     if (response.body().getStatus().equals("success")) {
                         ResolveAccountResponse.Data data = response.body().getResponseData();
                         Log.d("ProcessorActivity", data.getAccountName());
                         tvAccountName.setText(data.getAccountName());
-                        tvBankName.setText(Utils.fetchBankList().get("058"));
+                        tvAccountNumber.setText(accountNumber);
+                        tvAmount.setText("₦"+amountToSend);
+                        tvBankName.setText(Utils.fetchBankList().get(bankCode));
+                        accountInfoLayout.setVisibility(View.VISIBLE);
                     } else {
                         tvAccountName.setText("Failed to get data");
                         Log.d("ProcessorActivity", response.body().getStatusMessage());
                         Toast.makeText(ProcessorActivity.this, "status is error", Toast.LENGTH_SHORT)
                                 .show();
+                        finish();
                     }
                 }
             }
