@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -62,7 +64,7 @@ public class ProcessorActivity extends AppCompatActivity {
         tvAmount = findViewById(R.id.amount);
         tvBankName = findViewById(R.id.bank_name);
         proceedButton = (Button) findViewById(R.id.button_proceed);
-        
+
 
         barcode = getIntent().getStringExtra(EXTRA_URI_DATA);
         if (TextUtils.isEmpty(barcode)) {
@@ -176,6 +178,8 @@ public class ProcessorActivity extends AppCompatActivity {
     }
 
     private void processPayment(int amount, String walletLock) {
+        final AlertDialog.Builder dialogBuilder = createTransactionDialog();
+        final AlertDialog transactionDialog = dialogBuilder.show();
         DisburseRequest disburseRequest = new DisburseRequest();
         disburseRequest.setWalletLock(walletLock);
         disburseRequest.setAccountNumber(accountNumber);
@@ -191,21 +195,27 @@ public class ProcessorActivity extends AppCompatActivity {
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-
+                TextView txnStatus = transactionDialog.findViewById(R.id.transaction_status);
                 if (response.body() == null) {
                     try {
                         Log.d("ProcessorActivity", response.errorBody().string());
                     } catch (IOException ioe) {
                         Log.d("processorActivity", ioe.getMessage());
                     }
+                    Log.d("Transaction","Nah...response is null");
                 } else {
                     JsonObject responseObject = (JsonObject) response.body();
-                    if (responseObject.get("status").equals("success")) {
-                        JsonObject stubData = responseObject.getAsJsonObject("data");
-                        JsonObject actualData = responseObject.getAsJsonObject("data");
+                    String status = responseObject.get("status").toString();
+                    JsonObject stubData = responseObject.getAsJsonObject("data");
+                    JsonObject actualData = responseObject.getAsJsonObject("data");
+                    if (status.equals("\"success\"")) {
+                        Log.d("Transaction status", "Baby went through");
+                    } else {
+                        Log.d("Transaction status", "Transaction failed");
                     }
-                    Log.d("ProcessorData", responseObject.getAsJsonObject("data").toString());
                 }
+                transactionDialog.findViewById(R.id.processingProgressBar)
+                        .setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -222,5 +232,14 @@ public class ProcessorActivity extends AppCompatActivity {
                 showConfirmDialog(view);
             }
         });
+    }
+
+    private AlertDialog.Builder createTransactionDialog() {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_transaction_success, null);
+        dialogBuilder.setView(dialogView)
+            .create();
+        return dialogBuilder;
     }
 }
